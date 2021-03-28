@@ -3,10 +3,11 @@
 // **********************************
 
 // * Baud rate for both hardware and software serial
-#define BAUD_RATE 115200
+//#define BAUD_RATE 115200
+#define BAUD_RATE 96000 //node MCU v3 
 
 // * P1 Meter RX pin
-#define P1_SERIAL_RX D2
+#define P1_SERIAL_RX D5
 
 // * Max telegram length
 #define P1_MAXLINELENGTH 1024
