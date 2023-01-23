@@ -34,6 +34,9 @@ sensors/power/p1meter/short_power_outages 3
 sensors/power/p1meter/long_power_outages 1
 sensors/power/p1meter/short_power_drops 0
 sensors/power/p1meter/short_power_peaks 0
+sensors/power/p1meter/actual_average_15m_peak
+sensors/power/p1meter/thismonth_max_15m_peak
+sensors/power/p1meter/last13months_average_15m_peak
 ```
 
 As I don't have solar panels (yet) I do not collect the data for power returns as I don't have any.

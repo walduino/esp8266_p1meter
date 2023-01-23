@@ -137,10 +137,14 @@ void send_data_to_broker()
   send_metric("consumption_high_tarif", mEVHT);
   send_metric("production_low_tarif", mEOLT);
   send_metric("production_high_tarif", mEOHT);
-  
+
   send_metric("actual_consumption", mEAV);
   send_metric("actual_production", mEAV);
   send_metric("gas_meter_m3", mGAS);
+
+  send_metric("actual_average_15m_peak", mActualAverage15mPeak);
+  send_metric("thismonth_max_15m_peak", mMax15mPeakThisMonth);
+  send_metric("last13months_average_15m_peak", mAverage15mPeakLast13months);
 
   /*
   send_metric("consumption_low_tarif", CONSUMPTION_LOW_TARIF);
@@ -206,7 +210,7 @@ int FindCharInArrayRev(char array[], char c, int len)
   return -1;
 }
 
-/* 
+/*
 //replaced by simpler method
 long getValue(char *buffer, int maxlen, char startchar, char endchar)
 {
@@ -273,7 +277,7 @@ bool decode_telegram(int len)
   Serial.printf("startChar = %d \n", startChar);
   Serial.printf("endChar = %d \n", endChar);
   Serial.printf("len = %d \n", len);
-  
+
   if (startChar >= 0)
   {
     Serial.println("Branch 1");
@@ -291,11 +295,11 @@ bool decode_telegram(int len)
   {
     Serial.println("Branch 2");
     send_metric("test_branch", 2);
-    //add to crc calc
+    // add to crc calc
     currentCRC = CRC16(currentCRC, (unsigned char *)telegram + endChar, 1);
     char messageCRC[5];
     strncpy(messageCRC, telegram + endChar + 1, 4);
-    messageCRC[4] = 0; //thanks to HarmOtten (issue 5)
+    messageCRC[4] = 0; // thanks to HarmOtten (issue 5)
     if (outputOnSerial)
     {
       for (int cnt = 0; cnt < len; cnt++)
@@ -320,100 +324,119 @@ bool decode_telegram(int len)
     }
   }
 
-/*
-#pragma region DSMR4
-  // 1-0:1.8.1(000992.992*kWh)
-  // 1-0:1.8.1 = Elektra verbruik laag tarief (DSMR v4.0)
-  if (strncmp(telegram, "1-0:1.8.1", strlen("1-0:1.8.1")) == 0)
-  {
-    CONSUMPTION_LOW_TARIF = getValue(telegram, len);
-    //CONSUMPTION_LOW_TARIF = getValue(telegram, len, '(', '*');
-  }
+  /*
+  #pragma region DSMR4
+    // 1-0:1.8.1(000992.992*kWh)
+    // 1-0:1.8.1 = Elektra verbruik laag tarief (DSMR v4.0)
+    if (strncmp(telegram, "1-0:1.8.1", strlen("1-0:1.8.1")) == 0)
+    {
+      CONSUMPTION_LOW_TARIF = getValue(telegram, len);
+      //CONSUMPTION_LOW_TARIF = getValue(telegram, len, '(', '*');
+    }
 
-  // 1-0:1.8.2(000560.157*kWh)
-  // 1-0:1.8.2 = Elektra verbruik hoog tarief (DSMR v4.0)
-  if (strncmp(telegram, "1-0:1.8.2", strlen("1-0:1.8.2")) == 0)
-  {
-    CONSUMPTION_HIGH_TARIF = getValue(telegram, len);
-    //CONSUMPTION_HIGH_TARIF = getValue(telegram, len, '(', '*');
-  }
+    // 1-0:1.8.2(000560.157*kWh)
+    // 1-0:1.8.2 = Elektra verbruik hoog tarief (DSMR v4.0)
+    if (strncmp(telegram, "1-0:1.8.2", strlen("1-0:1.8.2")) == 0)
+    {
+      CONSUMPTION_HIGH_TARIF = getValue(telegram, len);
+      //CONSUMPTION_HIGH_TARIF = getValue(telegram, len, '(', '*');
+    }
 
-  // 1-0:1.7.0(00.424*kW) Actueel verbruik
-  // 1-0:2.7.0(00.000*kW) Actuele teruglevering
-  // 1-0:1.7.x = Electricity consumption actual usage (DSMR v4.0)
-  if (strncmp(telegram, "1-0:1.7.0", strlen("1-0:1.7.0")) == 0)
-  {
-    ACTUAL_CONSUMPTION = getValue(telegram, len);
-    //ACTUAL_CONSUMPTION = getValue(telegram, len, '(', '*');
-  }
+    // 1-0:1.7.0(00.424*kW) Actueel verbruik
+    // 1-0:2.7.0(00.000*kW) Actuele teruglevering
+    // 1-0:1.7.x = Electricity consumption actual usage (DSMR v4.0)
+    if (strncmp(telegram, "1-0:1.7.0", strlen("1-0:1.7.0")) == 0)
+    {
+      ACTUAL_CONSUMPTION = getValue(telegram, len);
+      //ACTUAL_CONSUMPTION = getValue(telegram, len, '(', '*');
+    }
 
-  // 1-0:21.7.0(00.378*kW)
-  // 1-0:21.7.0 = Instantaan vermogen Elektriciteit levering
-  if (strncmp(telegram, "1-0:21.7.0", strlen("1-0:21.7.0")) == 0)
-  {
-    INSTANT_POWER_USAGE = getValue(telegram, len);
-    //INSTANT_POWER_USAGE = getValue(telegram, len, '(', '*');
-  }
+    // 1-0:21.7.0(00.378*kW)
+    // 1-0:21.7.0 = Instantaan vermogen Elektriciteit levering
+    if (strncmp(telegram, "1-0:21.7.0", strlen("1-0:21.7.0")) == 0)
+    {
+      INSTANT_POWER_USAGE = getValue(telegram, len);
+      //INSTANT_POWER_USAGE = getValue(telegram, len, '(', '*');
+    }
 
-  // 1-0:31.7.0(002*A)
-  // 1-0:31.7.0 = Instantane stroom Elektriciteit
-  if (strncmp(telegram, "1-0:31.7.0", strlen("1-0:31.7.0")) == 0)
-  {
-    INSTANT_POWER_CURRENT = getValue(telegram, len);
-    //INSTANT_POWER_CURRENT = getValue(telegram, len, '(', '*');
-  }
+    // 1-0:31.7.0(002*A)
+    // 1-0:31.7.0 = Instantane stroom Elektriciteit
+    if (strncmp(telegram, "1-0:31.7.0", strlen("1-0:31.7.0")) == 0)
+    {
+      INSTANT_POWER_CURRENT = getValue(telegram, len);
+      //INSTANT_POWER_CURRENT = getValue(telegram, len, '(', '*');
+    }
 
-  // 0-1:24.2.1(150531200000S)(00811.923*m3)
-  // 0-1:24.2.1 = Gas (DSMR v4.0) on Kaifa MA105 meter
-  if (strncmp(telegram, "0-1:24.2.1", strlen("0-1:24.2.1")) == 0)
-  {
-    GAS_METER_M3 = getValue(telegram, len);
-    //GAS_METER_M3 = getValue(telegram, len, '(', '*');
-  }
+    // 0-1:24.2.1(150531200000S)(00811.923*m3)
+    // 0-1:24.2.1 = Gas (DSMR v4.0) on Kaifa MA105 meter
+    if (strncmp(telegram, "0-1:24.2.1", strlen("0-1:24.2.1")) == 0)
+    {
+      GAS_METER_M3 = getValue(telegram, len);
+      //GAS_METER_M3 = getValue(telegram, len, '(', '*');
+    }
 
-  // 0-0:96.14.0(0001)
-  // 0-0:96.14.0 = Actual Tarif
-  if (strncmp(telegram, "0-0:96.14.0", strlen("0-0:96.14.0")) == 0)
-  {
-    ACTUAL_TARIF = getValue(telegram, len);
-    //ACTUAL_TARIF = getValue(telegram, len, '(', ')');
-  }
+    // 0-0:96.14.0(0001)
+    // 0-0:96.14.0 = Actual Tarif
+    if (strncmp(telegram, "0-0:96.14.0", strlen("0-0:96.14.0")) == 0)
+    {
+      ACTUAL_TARIF = getValue(telegram, len);
+      //ACTUAL_TARIF = getValue(telegram, len, '(', ')');
+    }
 
-  // 0-0:96.7.21(00003)
-  // 0-0:96.7.21 = Aantal onderbrekingen Elektriciteit
-  if (strncmp(telegram, "0-0:96.7.21", strlen("0-0:96.7.21")) == 0)
-  {
-    SHORT_POWER_OUTAGES = getValue(telegram, len);
-    //SHORT_POWER_OUTAGES = getValue(telegram, len, '(', ')');
-  }
+    // 0-0:96.7.21(00003)
+    // 0-0:96.7.21 = Aantal onderbrekingen Elektriciteit
+    if (strncmp(telegram, "0-0:96.7.21", strlen("0-0:96.7.21")) == 0)
+    {
+      SHORT_POWER_OUTAGES = getValue(telegram, len);
+      //SHORT_POWER_OUTAGES = getValue(telegram, len, '(', ')');
+    }
 
-  // 0-0:96.7.9(00001)
-  // 0-0:96.7.9 = Aantal lange onderbrekingen Elektriciteit
-  if (strncmp(telegram, "0-0:96.7.9", strlen("0-0:96.7.9")) == 0)
-  {
-    LONG_POWER_OUTAGES = getValue(telegram, len);
-    //LONG_POWER_OUTAGES = getValue(telegram, len, '(', ')');
-  }
+    // 0-0:96.7.9(00001)
+    // 0-0:96.7.9 = Aantal lange onderbrekingen Elektriciteit
+    if (strncmp(telegram, "0-0:96.7.9", strlen("0-0:96.7.9")) == 0)
+    {
+      LONG_POWER_OUTAGES = getValue(telegram, len);
+      //LONG_POWER_OUTAGES = getValue(telegram, len, '(', ')');
+    }
 
-  // 1-0:32.32.0(00000)
-  // 1-0:32.32.0 = Aantal korte spanningsdalingen Elektriciteit in fase 1
-  if (strncmp(telegram, "1-0:32.32.0", strlen("1-0:32.32.0")) == 0)
-  {
-    SHORT_POWER_DROPS = getValue(telegram, len);
-    //SHORT_POWER_DROPS = getValue(telegram, len, '(', ')');
-  }
+    // 1-0:32.32.0(00000)
+    // 1-0:32.32.0 = Aantal korte spanningsdalingen Elektriciteit in fase 1
+    if (strncmp(telegram, "1-0:32.32.0", strlen("1-0:32.32.0")) == 0)
+    {
+      SHORT_POWER_DROPS = getValue(telegram, len);
+      //SHORT_POWER_DROPS = getValue(telegram, len, '(', ')');
+    }
 
-  // 1-0:32.36.0(00000)
-  // 1-0:32.36.0 = Aantal korte spanningsstijgingen Elektriciteit in fase 1
-  if (strncmp(telegram, "1-0:32.36.0", strlen("1-0:32.36.0")) == 0)
-  {
-    SHORT_POWER_PEAKS = getValue(telegram, len);
-    //SHORT_POWER_PEAKS = getValue(telegram, len, '(', ')');
-  }
+    // 1-0:32.36.0(00000)
+    // 1-0:32.36.0 = Aantal korte spanningsstijgingen Elektriciteit in fase 1
+    if (strncmp(telegram, "1-0:32.36.0", strlen("1-0:32.36.0")) == 0)
+    {
+      SHORT_POWER_PEAKS = getValue(telegram, len);
+      //SHORT_POWER_PEAKS = getValue(telegram, len, '(', ')');
+    }
+
+  #pragma endregion
+
+  */
+
+#pragma region UPDATE 1.7.1 PEAK TARRIFF
+  // 1-0:1.4.0(02.351*kW)
+  // 1-0:1.4.0 = quart_hourly_current_average_peak_consumption kW - Current rolling avg of the last 15 minutes
+  if (strncmp(telegram, "1-0:1.4.0", strlen("1-0:1.4.0")) == 0)
+    mActualAverage15mPeak = getValue(telegram, len);
+
+  // 1-0:1.6.0(200509134558S)(02.589*kW)
+  // 1-0:1.6.0 = quart_hourly_max_peak_this_month kW
+  if (strncmp(telegram, "1-0:1.6.0", strlen("1-0:1.6.0")) == 0)
+    mMax15mPeakThisMonth = getValue(telegram, len);
+
+  // 0-0:98.1.0(3)(1-0:1.6.0)(1-0:1.6.0)(200501000000S)(200423192538S)(03.695*kW)(200401000000S)(200305122139S)(05.980*kW)(200301000000S)(200210035421W)(04.318*kW)
+  // 0-0:98.1.0 = quart_hourly_peak_consumption_last_13months
+  if (strncmp(telegram, "0-0:98.1.0", strlen("0-0:98.1.0")) == 0)
+    mAverage15mPeakLast13months = getValue(telegram, len);
+    // Is this value correcttly processed? since the telegram is quit long!!!
 
 #pragma endregion
-
-*/
 
 #pragma region DSMR5
   // 1-0:1.8.1(000992.992*kWh)
@@ -538,19 +561,17 @@ void setup_ota()
   ArduinoOTA.setHostname(HOSTNAME);
   ArduinoOTA.setPassword(OTA_PASSWORD);
 
-  ArduinoOTA.onStart([]() {
-    Serial.println(F("Arduino OTA: Start"));
-  });
+  ArduinoOTA.onStart([]()
+                     { Serial.println(F("Arduino OTA: Start")); });
 
-  ArduinoOTA.onEnd([]() {
-    Serial.println(F("Arduino OTA: End (Running reboot)"));
-  });
+  ArduinoOTA.onEnd([]()
+                   { Serial.println(F("Arduino OTA: End (Running reboot)")); });
 
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Arduino OTA Progress: %u%%\r", (progress / (total / 100)));
-  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total)
+                        { Serial.printf("Arduino OTA Progress: %u%%\r", (progress / (total / 100))); });
 
-  ArduinoOTA.onError([](ota_error_t error) {
+  ArduinoOTA.onError([](ota_error_t error)
+                     {
     Serial.printf("Arduino OTA Error[%u]: ", error);
     if (error == OTA_AUTH_ERROR)
       Serial.println(F("Arduino OTA: Auth Failed"));
@@ -561,8 +582,7 @@ void setup_ota()
     else if (error == OTA_RECEIVE_ERROR)
       Serial.println(F("Arduino OTA: Receive Failed"));
     else if (error == OTA_END_ERROR)
-      Serial.println(F("Arduino OTA: End Failed"));
-  });
+      Serial.println(F("Arduino OTA: End Failed")); });
 
   ArduinoOTA.begin();
   Serial.println(F("Arduino OTA finished"));

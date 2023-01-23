@@ -61,6 +61,9 @@ const bool outputOnSerial = true;
 
 // * DSMR5 values
 // Vars to store meter readings
+long mActualAverage15mPeak = 0;
+long mMax15mPeakThisMonth = 0;
+long mAverage15mPeakLast13months = 0;
 long mEVLT = 0; //Meter reading Electrics - Elektra verbruik dagtarief (Fluvius) - Totale afname van energie in kWh dagtarief
 long mEVHT = 0; //Meter reading Electrics - Elektra verbruik nachttarief (Fluvius) - Totale afname van energie in kWh nachttarief
 long mEOLT = 0; //Meter reading Electrics - Elektra opbrengst dagtarief (Fluvius) - Totale injectie van energie in kWh dagtarief
