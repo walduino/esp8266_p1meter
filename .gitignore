@@ -37,3 +37,4 @@
 # PlatformIo
 .pio/
 config.code-workspace
+.vscode/c_cpp_properties.json
