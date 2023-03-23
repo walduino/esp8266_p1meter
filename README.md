@@ -1,9 +1,18 @@
 # esp8266_p1meter
 
 Software for the ESP2866 that sends P1 smart meter data to an mqtt broker (with OTA firmware updates)
-Telegrams can be decoded via: 
 
-# Upgrading
+## Updates
+
+### March 2023:
+* Peak power usage, is include as of march 2023. Implemented for and tested on the belgian smartmeters.
+  More details of the eMUC 1.7.1 verion can be found here: [maakjemeterslim.be/](https://maakjemeterslim.be/rails/active_storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBc01DIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--5ea3b7f3ca44446cdb06da065b3e4273b3950c99/e-MUCS_P1_Ed_1_3%20(1).pdf?disposition=attachment)
+  * process 15min powerpeaks
+  * process maximum monthly powerpeak
+  * process average monthly powerpeak /12 monhts
+    * send the 12 values as JSON over MQTT.
+
+## Upgrading
 
 When upgrading this sketch from the older version that uses software serial, make sure you re-check the pins and the wiring.
 The used pinout has changed since the switch to hardware serial (starting at version `0.0.2`)
@@ -31,6 +40,10 @@ Finishing off:
 - Configure your wifi and Mqtt settings
 - To check if everything is up and running you can listen to the MQTT topic `hass/status`, on startup a single message is sent.
 
+Reset the wifi and other parameters:
+- [DoubleResetDetector] (https://github.com/datacute/DoubleResetDetector) library is added.
+- when pushing the reset button twice within 10 seconds (or set in the `DRD_TIMEOUT`) the wifi settings will be cleared.
+
 ## Connecting to the P1 meter
 Connect the esp8266 to an RJ11 cable/connector following the diagram.
 
@@ -44,7 +57,12 @@ Connect the esp8266 to an RJ11 cable/connector following the diagram.
 On most Landys and Gyr models a 10K resistor should be used between the ESP's 3.3v and the p1's DATA (RXD) pin.
 Many howto's mention RTS requires 5V (VIN) to activate the P1 port, but for me 3V3 suffices.
 
+<details><summary>Expand to see wiring schema</summary>
+<p>
+
 ![Wiring](/assets/esp8266_p1meter_bb.png)
+</p>
+</details>
 
 ### Optional: Powering the esp8266 using your DSMR5+ meter
 
@@ -73,35 +91,36 @@ All metrics are send to their own MQTT topic.
 The software sends out to the following MQTT topics:
 
 ```
-sensors/power/p1meter/consumption_low_tarif 2209397
-sensors/power/p1meter/consumption_high_tarif 1964962
-sensors/power/p1meter/returndelivery_low_tarif 2209397
-sensors/power/p1meter/returndelivery_high_tarif 1964962
-sensors/power/p1meter/actual_consumption 313
-sensors/power/p1meter/actual_returndelivery 0
-sensors/power/p1meter/l1_instant_power_usage 313
-sensors/power/p1meter/l2_instant_power_usage 0
-sensors/power/p1meter/l3_instant_power_usage 0
-sensors/power/p1meter/l1_instant_power_current 1000
-sensors/power/p1meter/l2_instant_power_current 0
-sensors/power/p1meter/l3_instant_power_current 0
-sensors/power/p1meter/l1_voltage 233
-sensors/power/p1meter/l2_voltage 0
-sensors/power/p1meter/l3_voltage 0
-sensors/power/p1meter/gas_meter_m3 968922
-sensors/power/p1meter/actual_tarif_group 2
-sensors/power/p1meter/short_power_outages 3
-sensors/power/p1meter/long_power_outages 1
-sensors/power/p1meter/short_power_drops 0
-sensors/power/p1meter/short_power_peaks 0
+sensors/power/p1meter/consumption_low_tarif 
+sensors/power/p1meter/consumption_high_tarif 
+sensors/power/p1meter/returndelivery_low_tarif 
+sensors/power/p1meter/returndelivery_high_tarif 
+sensors/power/p1meter/actual_consumption 
+sensors/power/p1meter/actual_returndelivery 
+sensors/power/p1meter/l1_instant_power_usage 
+sensors/power/p1meter/l2_instant_power_usage 
+sensors/power/p1meter/l3_instant_power_usage 
+sensors/power/p1meter/l1_instant_power_current 
+sensors/power/p1meter/l2_instant_power_current 
+sensors/power/p1meter/l3_instant_power_current 
+sensors/power/p1meter/l1_voltage 
+sensors/power/p1meter/l2_voltage 
+sensors/power/p1meter/l3_voltage 
+sensors/power/p1meter/gas_meter_m3 
+sensors/power/p1meter/actual_tarif_group 
+sensors/power/p1meter/short_power_outages 
+sensors/power/p1meter/long_power_outages 
+sensors/power/p1meter/short_power_drops 
+sensors/power/p1meter/short_power_peaks 
 sensors/power/p1meter/actual_average_15m_peak
 sensors/power/p1meter/thismonth_max_15m_peak
 sensors/power/p1meter/last13months_average_15m_peak
+sensors/power/p1meter/last13months_peaks_json 
 ```
 
 ## Home Assistant Configuration
 
-Use this [example](https://raw.githubusercontent.com/fliphess/esp8266_p1meter/master/assets/p1_sensors.yaml) for home assistant's `sensor.yaml`
+Use this [example](/assets/p1_sensors.yaml) for home assistant's `sensor.yaml`
 
 The automatons are yours to create.
 And always remember that sending alerts in case of a power outtage only make sense when you own a UPS battery :)
@@ -119,8 +138,9 @@ A special mention for the contributions made by other developers that make worki
 
 Standing on the heads of giants, my gratitude goes out to:
 
-- [Thomas Roos](https://github.com/Roosted7)
 - [Daniel de Jong](https://github.com/daniel-jong)
+- [Flip Hess](https://github.com/fliphess)
+- [Thomas Roos](https://github.com/Roosted7)
 - [Gé Janssen](http://gejanssen.com/howto/Slimme-meter-uitlezen)
 - [Jan ten Hove](https://github.com/jantenhove/P1-Meter-ESP8266)
 - [Ronny Roethof](https://github.com/rroethof/p1reader)
