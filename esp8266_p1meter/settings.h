@@ -94,5 +94,7 @@ long mActualAverage15mPeak = 0;
 long mMax15mPeakThisMonth = 0;
 long mAverage15mPeakLast13months = 0;
 
+StaticJsonDocument<256> Last13MonthsPeaks_json; //max buffer of PubSubClient is 256 byte. so no longer JSON messages allowed!
+
 // * Set during CRC checking
 unsigned int currentCRC = 0;
