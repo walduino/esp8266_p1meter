@@ -77,11 +77,12 @@ void send_mqtt_message(const char *topic, char *payload)
 }
 
 // * send a Json message to a broker topic
-void send_mqtt_message(const char *topic, DynamicJsonDocument doc)
+void send_mqtt_message(const char *topic, StaticJsonDocument<256> doc)
 {
     char buffer[256]; //max buffer of PubSubClient is 256 byte.
     size_t n = serializeJson(doc, buffer);
     mqtt_client.publish(topic, buffer, n);
+    doc.clear(); // clear memory for the Json Document in this method.
 }
 
 // * Reconnect to MQTT server and subscribe to in and out topics
@@ -169,6 +170,7 @@ void send_data_to_broker()
     send_metric("thismonth_max_15m_peak", mMax15mPeakThisMonth);
     send_metric("last13months_average_15m_peak", mAverage15mPeakLast13months);
     send_mqtt_message((String(MQTT_ROOT_TOPIC) + "/" + "last13months_peaks_json").c_str(), Last13MonthsPeaks_json); // bypassed send_metric() for Json message.
+    Last13MonthsPeaks_json.clear(); // clear memory for the GLOBAL JsonDocument.
 }
 
 // **********************************
