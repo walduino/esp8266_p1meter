@@ -33,7 +33,7 @@ Compiling up using Arduino IDE:
 Compiling up using PlatformIO:
 - Ensure the correct board type is selected in project configuration
 - In the file `Settings.h` change `OTA_PASSWORD` to a safe secret value
-- Upload the software.
+- Upload the software. Keep using the OTA Password the same during OTA updates.
 
 Finishing off:
 - You should now see a new wifi network `ESP******` connect to this wifi network, a popup should appear, else manually navigate to `192.168.4.1`
