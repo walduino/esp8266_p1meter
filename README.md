@@ -35,6 +35,7 @@ Compiling up using PlatformIO:
 - In the file `Settings.h` change `OTA_PASSWORD` to a safe secret value
 - Upload the software. Keep using the OTA Password the same during OTA updates.
 
+
 Finishing off:
 - You should now see a new wifi network `ESP******` connect to this wifi network, a popup should appear, else manually navigate to `192.168.4.1`
 - Configure your wifi and Mqtt settings
@@ -71,6 +72,26 @@ Many howto's mention RTS requires 5V (VIN) to activate the P1 port, but for me 3
 
 When using a 6 pin cable you can use the power source provided by the meter.
 
+## Connecting to the P1 meter
+Connect the esp8266 to an RJ11 cable/connector following the diagram.
+
+| P1 pin   | ESP8266 Pin |
+| ----     | ---- |
+| 2 - RTS  | 3.3v |
+| 3 - GND  | GND  |
+| 4 -      |      |
+| 5 - RXD (data) | RX (gpio3) |
+
+On most Landys and Gyr models a 10K resistor should be used between the ESP's 3.3v and the p1's DATA (RXD) pin. Many howto's mention RTS requires 5V (VIN) to activate the P1 port, but for me 3V3 suffices.
+
+![Wiring](https://raw.githubusercontent.com/daniel-jong/esp8266_p1meter/master/assets/esp8266_p1meter_bb.png)
+
+### Optional: Powering the esp8266 using your DSMR5+ meter 
+<details><summary>Expand to see wiring description</summary>
+<p>
+  
+When using a 6 pin cable you can use the power source provided by the meter.
+  
 | P1 pin   | ESP8266 Pin |
 | ----     | ---- |
 | 1 - 5v out | 5v or Vin |
@@ -80,7 +101,10 @@ When using a 6 pin cable you can use the power source provided by the meter.
 | 5 - RXD (data) | RX (gpio3) |
 | 6 - GND  | GND  |
 
-![Wiring powered by meter](https://raw.githubusercontent.com/fliphess/esp8266_p1meter/master/assets/esp8266_p1meter_bb_PoweredByMeter.png)
+
+
+![Wiring powered by meter](/assets/esp8266_p1meter_bb_PoweredByMeter.png)
+
 
 </p>
 </details>
@@ -91,41 +115,35 @@ All metrics are send to their own MQTT topic.
 The software sends out to the following MQTT topics:
 
 ```
-sensors/power/p1meter/consumption_low_tarif 
-sensors/power/p1meter/consumption_high_tarif 
-sensors/power/p1meter/returndelivery_low_tarif 
-sensors/power/p1meter/returndelivery_high_tarif 
-sensors/power/p1meter/actual_consumption 
-sensors/power/p1meter/actual_returndelivery 
-sensors/power/p1meter/l1_instant_power_usage 
-sensors/power/p1meter/l2_instant_power_usage 
-sensors/power/p1meter/l3_instant_power_usage 
-sensors/power/p1meter/l1_instant_power_current 
-sensors/power/p1meter/l2_instant_power_current 
-sensors/power/p1meter/l3_instant_power_current 
-sensors/power/p1meter/l1_voltage 
-sensors/power/p1meter/l2_voltage 
-sensors/power/p1meter/l3_voltage 
-sensors/power/p1meter/gas_meter_m3 
-sensors/power/p1meter/actual_tarif_group 
-sensors/power/p1meter/short_power_outages 
-sensors/power/p1meter/long_power_outages 
-sensors/power/p1meter/short_power_drops 
-sensors/power/p1meter/short_power_peaks 
-sensors/power/p1meter/actual_average_15m_peak
-sensors/power/p1meter/thismonth_max_15m_peak
-sensors/power/p1meter/last13months_average_15m_peak
-sensors/power/p1meter/last13months_peaks_json 
+sensors/power/p1meter/consumption_low_tarif 2209397
+sensors/power/p1meter/consumption_high_tarif 1964962
+sensors/power/p1meter/actual_consumption 313
+sensors/power/p1meter/actual_returndelivery 0
+sensors/power/p1meter/l1_instant_power_usage 313
+sensors/power/p1meter/l2_instant_power_usage 0
+sensors/power/p1meter/l3_instant_power_usage 0
+sensors/power/p1meter/l1_instant_power_current 1000
+sensors/power/p1meter/l2_instant_power_current 0
+sensors/power/p1meter/l3_instant_power_current 0
+sensors/power/p1meter/l1_voltage 233
+sensors/power/p1meter/l2_voltage 0
+sensors/power/p1meter/l3_voltage 0
+sensors/power/p1meter/gas_meter_m3 968922
+sensors/power/p1meter/actual_tarif_group 2
+sensors/power/p1meter/short_power_outages 3
+sensors/power/p1meter/long_power_outages 1
+sensors/power/p1meter/short_power_drops 0
+sensors/power/p1meter/short_power_peaks 0
 ```
 
 ## Home Assistant Configuration
+
 
 Use this [example](/assets/p1_sensors.yaml) for home assistant's `sensor.yaml`
 
 The automatons are yours to create.
 And always remember that sending alerts in case of a power outtage only make sense when you own a UPS battery :)
 
-## Warning / Disclaimer
 
 Although I've never had issues as a result of using this sketch reading my p1 meter, software can change, bugs can be introduced and incidents happen.
 Using this sketch is at your own risk ;)
@@ -146,4 +164,3 @@ Standing on the heads of giants, my gratitude goes out to:
 - [Ronny Roethof](https://github.com/rroethof/p1reader)
 - [Ronald Leenes](http://romix.macuser.nl/software.html)
 - [Robert-Jan Regout](http://blog.regout.info/category/slimmeter)
-

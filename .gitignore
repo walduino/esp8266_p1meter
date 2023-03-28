@@ -37,3 +37,6 @@
 # PlatformIo
 .pio/
 config.code-workspace
+
+# PlatformIo
+.pio/
