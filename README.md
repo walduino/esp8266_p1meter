@@ -141,6 +141,14 @@ sensors/power/p1meter/short_power_peaks 0
 
 Use this [example](/assets/p1_sensors.yaml) for home assistant's `sensor.yaml`
 
+```
+homeassistant:
+  packages: !include_dir_named packages
+```
+Add the code block above to ```configuration.yaml```, create a ```packages``` directory and put the sensors yaml file in there
+then in 'settings' , 'dashboards', 'Energy' add ```P1 Consumption High Tariff``` and ```P1 Consumption Low Tariff``` to  Electricity grid.  
+Add ```P1 Gas Usage``` to  Gas Consumption
+
 The automatons are yours to create.
 And always remember that sending alerts in case of a power outtage only make sense when you own a UPS battery :)
 
