@@ -1,6 +1,6 @@
 # esp8266_p1meter
 
-Software for the ESP2866 that sends P1 smart meter data to an mqtt broker (with OTA firmware updates)
+Software for the ESP2866 that sends P1 smart meter data to an mqtt broker (with OTA firmware updates)  
 Needs GCC 14, no luck on standard ubuntu
 
 ## Updates
